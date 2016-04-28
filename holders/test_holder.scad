@@ -1,22 +1,41 @@
+// holder for SG92R servo
 
-module bracket() {
-    // servo test bracket.
+// width:  12.5
+// length: 22.8
+// height to flange: 16.4
+// height to cable: 4.3
+// width of cable: 3.6
+
+
+module servo_holder() {
     difference() {
-        cube([22.5,4,37]);
-        translate([5,-0.01,9])
-        cube([13.5,4.1,25]);
-        translate([8.5,-0.01,31.99])
-        cube([6,4.1,6]);
+        cube([18.5,28.8,15.5]);
+        translate([2.2,2,0])
+        cube([14,24.25,20]);
+        translate([7.25,-0.1,3.5])
+        cube([4,5,15]);
     }
 }
-//bracket();
-
-for (i = [2,32,62]) {
-    for(j = [0:2]) {
-        translate([i,j*44 + 2,3])
-        bracket();
+module servo_holder_reversed() {
+    color("red") {
+        rotate([0,0,180])
+        servo_holder();
     }
 }
+translate([0,0,0])
+cube([203, 90, 3]);
 
-//base
-cube([87.5,100,3.1]);
+for(j = [0:4]) {
+    translate([j*45 + 2,58,3])
+    servo_holder();
+}
+
+for(j = [0:4]) {
+    translate([j*45 + 20.5,32,3])
+    servo_holder_reversed();
+}
+
+
+
+
+
