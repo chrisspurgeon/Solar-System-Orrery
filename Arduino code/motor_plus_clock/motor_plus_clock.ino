@@ -1,5 +1,18 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
+#include "String.h"
+#include "Wire.h"
+#include "Servo.h"
+#include <avr/pgmspace.h>
+#include <DS3231.h>
+
+DS3231 clock;
+RTCDateTime dt;
+
+#define DS1307_I2C_ADDRESS 0x68
+
+
+
 
 // called this way, it uses the default address 0x40
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
@@ -23,7 +36,10 @@ void setup() {
   pwm.begin();
   
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
-
+  // Initialize DS3231
+  Serial.println("Initialize DS3231");
+  clock.begin();
+  
   yield();
 }
 
@@ -58,5 +74,22 @@ void loop() {
   delay(250);
 
   servonum ++;
-  if (servonum > 9) servonum = 0;
+  if (servonum > 9) {
+    servonum = 0;
+    Serial.println("clock goes here");
+    dt = clock.getDateTime();
+  
+  
+    Serial.print("Raw data: ");
+    Serial.print(dt.year);   Serial.print("-");
+    Serial.print(dt.month);  Serial.print("-");
+    Serial.print(dt.day);    Serial.print(" ");
+    Serial.print(dt.hour);   Serial.print(":");
+    Serial.print(dt.minute); Serial.print(":");
+    Serial.print(dt.second); Serial.println("");
+
+    delay(1000);
+  
+  
+  }
 }
