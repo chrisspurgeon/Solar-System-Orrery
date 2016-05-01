@@ -1,8 +1,6 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "String.h"
-#include "Wire.h"
-#include "Servo.h"
 #include <avr/pgmspace.h>
 #include <DS3231.h>
 
