@@ -237,6 +237,8 @@ int moveMotor(int thisPlanetPosition, int servoNumber, int downPosition, int upP
     } else {
       pwm.setPWM(servoNumber, 0, upPosition);      
     }
+  } else {
+    pwm.setPWM(servoNumber, 0, 0);
   }
   return thisPlanetPosition;
 }
@@ -312,53 +314,61 @@ void loop() {
   Serial.print("Sun position is ");
   Serial.println(thisPlanetPosition);
   sunParams[4] = moveMotor(thisPlanetPosition, sunParams[1], sunParams[2], sunParams[3], sunParams[4]);
+  delay(1000);
   
   thisPlanetPosition = checker(convertedDate, mercury, mercuryParams[0]);
   Serial.print("Mercury position is ");
   Serial.println(thisPlanetPosition);
   mercuryParams[4] = moveMotor(thisPlanetPosition, mercuryParams[1], mercuryParams[2], mercuryParams[3], mercuryParams[4]);
+  delay(1000);
   
   thisPlanetPosition = checker(convertedDate, venus, venusParams[0]);
   Serial.print("Venus position is ");
   Serial.println(thisPlanetPosition);
   venusParams[4] = moveMotor(thisPlanetPosition, venusParams[1], venusParams[2], venusParams[3], venusParams[4]);
+  delay(1000);
   
   thisPlanetPosition = checker(convertedDate, moon, moonParams[0]);
   Serial.print("Moon position is ");
   Serial.println(thisPlanetPosition);
   moonParams[4] = moveMotor(thisPlanetPosition, moonParams[1], moonParams[2], moonParams[3], moonParams[4]);
+  delay(1000);
 
   thisPlanetPosition = checker(convertedDate, mars, marsParams[0]);
   Serial.print("Mars position is ");
   Serial.println(thisPlanetPosition);
   marsParams[4] = moveMotor(thisPlanetPosition, marsParams[1], marsParams[2], marsParams[3], marsParams[4]);
+  delay(1000);
 
   thisPlanetPosition = checker(convertedDate, jupiter, jupiterParams[0]);
   Serial.print("Jupiter position is ");
   Serial.println(thisPlanetPosition);
   jupiterParams[4] = moveMotor(thisPlanetPosition, jupiterParams[1], jupiterParams[2], jupiterParams[3], jupiterParams[4]);
+  delay(1000);
   
   thisPlanetPosition = checker(convertedDate, saturn, saturnParams[0]);
   Serial.print("Saturn position is ");
   Serial.println(thisPlanetPosition);
   saturnParams[4] = moveMotor(thisPlanetPosition, saturnParams[1], saturnParams[2], saturnParams[3], saturnParams[4]);
+  delay(1000);
   
   thisPlanetPosition = checker(convertedDate, uranus, uranusParams[0]);
   Serial.print("Uranus position is ");
   Serial.println(thisPlanetPosition);
   uranusParams[4] = moveMotor(thisPlanetPosition, uranusParams[1], uranusParams[2], uranusParams[3], uranusParams[4]);
+  delay(1000);
 
   thisPlanetPosition = checker(convertedDate, neptune, neptuneParams[0]);
   Serial.print("Neptune position is ");
   Serial.println(thisPlanetPosition);
   neptuneParams[4] = moveMotor(thisPlanetPosition, neptuneParams[1], neptuneParams[2], neptuneParams[3], neptuneParams[4]);
+  delay(1000);
 
   thisPlanetPosition = checker(convertedDate, pluto, plutoParams[0]);
   Serial.print("Pluto position is ");
   Serial.println(thisPlanetPosition);
   plutoParams[4] = moveMotor(thisPlanetPosition, plutoParams[1], plutoParams[2], plutoParams[3], plutoParams[4]);
-
-  delay(7000);
+  delay(1000);
 
   
   //DEBUGGING
