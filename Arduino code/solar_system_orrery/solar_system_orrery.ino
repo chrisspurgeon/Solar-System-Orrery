@@ -25,6 +25,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 // have!
 #define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
+#define PLANETUP  375 // Halfway between SERVOMIN and SERVOMAX
 
 
 
@@ -197,6 +198,39 @@ long bcdToLong(byte val) {
 
 
 
+
+
+void testMotors() {
+  for (servonum = 0; servonum < 10; servonum++) {
+    Serial.print("Testing motor ");
+    Serial.println(servonum);
+    for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
+      pwm.setPWM(servonum, 0, pulselen);
+    }
+  
+    delay(500);
+    for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+      pwm.setPWM(servonum, 0, pulselen);
+    }
+  
+    delay(500);
+  }
+
+  pwm.setPWM(5, 0, PLANETUP);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 void setup() {
   Serial.begin(9600);
 
@@ -207,8 +241,9 @@ void setup() {
   Serial.println("Initialize DS3231");
   clock.begin();
 
+  testMotors();
 //  checkArray(&pluto, plutoLength);
-  yield();
+  
 }
 
 
@@ -255,34 +290,18 @@ void loop() {
   Serial.println(convertedDate);
 
   Serial.println("About to check a planet...");
-  int PlutoPosition = checker(convertedDate, pluto, 197);
-  Serial.print("PlutoPosition is ");
+  int PlutoPosition = checker(convertedDate, saturn, 197);
+  Serial.print("Saturn position is ");
   Serial.println(PlutoPosition);
-  delay(8000);
   
-  /*
+
+
+  
   //DEBUGGING
   
-  
-  Serial.println(servonum);
-  for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
-    pwm.setPWM(servonum, 0, pulselen);
-  }
-
-  delay(500);
-  for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
-    pwm.setPWM(servonum, 0, pulselen);
-  }
-
-  delay(500);
-
-  servonum ++;
-  if (servonum > 9) {
-    servonum = 0;
+/*
     Serial.println("clock goes here");
     dt = clock.getDateTime();
-  
-  
     Serial.print("Raw data: ");
     Serial.print(dt.year);   Serial.print("-");
     Serial.print(dt.month);  Serial.print("-");
@@ -290,12 +309,8 @@ void loop() {
     Serial.print(dt.hour);   Serial.print(":");
     Serial.print(dt.minute); Serial.print(":");
     Serial.print(dt.second); Serial.println("");
-
-    delay(1000);  
-  }
-    */
-
-}   // end of loop
+*/
+}   // end of loop()
 
 
 
