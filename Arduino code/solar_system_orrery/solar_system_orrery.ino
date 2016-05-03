@@ -14,15 +14,6 @@ RTCDateTime dt;
 #define DS1307_I2C_ADDRESS 0x68
 
 
-int lastSecond = 0;
-int pos = 0;
-int UP = 115;
-int DOWN = 25;
-
-long convertedDate;
-long lastEvent;
-unsigned long horizonTimeLong;
-
 // called this way, it uses the default address 0x40
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 // you can also call it with a different address you want
@@ -34,6 +25,19 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 // have!
 #define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
+
+
+
+
+int lastSecond = 0;
+int pos = 0;
+int UP = SERVOMAX;
+int DOWN = SERVOMIN;
+
+long convertedDate;
+long lastEvent;
+unsigned long horizonTimeLong;
+
 
 // our servo # counter
 uint8_t servonum = 0;
@@ -119,49 +123,158 @@ const PROGMEM uint32_t pluto[] = {
 
 
 
+
+
+void checkArray(const uint32_t *planet, int planetLength) {
+  for (int i = 0; i < planetLength; i++) {
+    Serial.print("pluto[");
+    Serial.print(i);
+    Serial.print("]: ");
+    Serial.println(pgm_read_dword_near(&planet[i]), DEC);
+  }
+}
+
+int checker(long DATE, const uint32_t *planet, int planetDataLength) {
+    Serial.println("Inside checker()");
+    int currentValue = 0;
+    int i;
+    for (i=0; i < planetDataLength; i++) {
+        horizonTimeLong = pgm_read_dword_near(&planet[i]);
+        if (horizonTimeLong <= DATE) {
+            lastEvent = horizonTimeLong;
+            if (i % 2 == 0) {
+              currentValue = 0;
+            } else {
+              currentValue = 1;
+            }
+            Serial.print("lastEvent already happened: ");
+            Serial.print(lastEvent);
+            Serial.print(" : ");
+            Serial.println(horizonTimeLong);
+            Serial.print("currentValue is ");
+            Serial.println(currentValue);
+        }
+    }
+    
+    return currentValue;
+
+}
+
+
+// Gets the date and time from the ds1307
+void getDateDs1307(long *second, long *minute, long *hour, long *dayOfWeek, long *dayOfMonth, long *month, long *year) {
+  // Reset the register pointer
+  Wire.beginTransmission(DS1307_I2C_ADDRESS);
+  Wire.write(0);
+  Wire.endTransmission();
+  Wire.requestFrom(DS1307_I2C_ADDRESS, 7);
+
+  // A few of these need masks because certain bits are control bits
+  *second     = bcdToLong(Wire.read() & 0x7f);
+  *minute     = bcdToLong(Wire.read());
+  *hour       = bcdToLong(Wire.read() & 0x3f);  // Need to change this if 12 hour am/pm
+  *dayOfWeek  = bcdToLong(Wire.read());
+  *dayOfMonth = bcdToLong(Wire.read());
+  *month      = bcdToLong(Wire.read());
+  *year       = bcdToLong(Wire.read());
+}
+
+// Convert normal decimal numbers to binary coded decimal
+byte decToBcd(byte val) {
+ return ( (val/10*16) + (val%10) );
+}
+
+// Convert binary coded decimal to normal decimal numbers
+byte bcdToDec(byte val) {
+  return ( (val/16*10) + (val%16) );
+}
+
+// Convert binary coded decimal to normal decimal numbers
+long bcdToLong(byte val) {
+  return ( (val/16*10) + (val%16) );
+}
+
+
+
+
 void setup() {
   Serial.begin(9600);
-  Serial.println("16 channel Servo test!");
 
+  Serial.println("Initialize servos.");
   pwm.begin();
-  
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
   // Initialize DS3231
   Serial.println("Initialize DS3231");
   clock.begin();
-  
+
+//  checkArray(&pluto, plutoLength);
   yield();
 }
 
-// you can use this function if you'd like to set the pulse length in seconds
-// e.g. setServoPulse(0, 0.001) is a ~1 millisecond pulse width. its not precise!
-void setServoPulse(uint8_t n, double pulse) {
-  double pulselength;
-  
-  pulselength = 1000000;   // 1,000,000 us per second
-  pulselength /= 60;   // 60 Hz
-  Serial.print(pulselength); Serial.println(" us per period"); 
-  pulselength /= 4096;  // 12 bits of resolution
-  Serial.print(pulselength); Serial.println(" us per bit"); 
-  pulse *= 1000;
-  pulse /= pulselength;
-  Serial.println(pulse);
-  pwm.setPWM(n, 0, pulse);
-}
 
 void loop() {
-  // Drive each servo one at a time
+
+  Serial.println("In the loop...");
+
+//  checkArray(pluto, plutoLength);
+
+  long second, minute, hour, dayOfWeek, dayOfMonth, month, year;
+
+  getDateDs1307(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month, &year);
+
+  Serial.print(hour, DEC);
+  Serial.print(":");
+  if (minute < 10) {
+      Serial.print("0");
+  }
+  Serial.print(minute, DEC);
+  Serial.print(":");
+  if (second < 10) {
+      Serial.print("0");
+  }
+  Serial.print(second, DEC);
+  Serial.print("  ");
+  Serial.print(month, DEC);
+  Serial.print("/");
+  if (dayOfMonth < 10) {
+      Serial.print("0");
+  }
+  Serial.print(dayOfMonth, DEC);
+  Serial.print("/");
+  Serial.print(year + 2000, DEC);
+  Serial.print("  Day_of_week:");
+  Serial.println(dayOfWeek, DEC);
+
+
+  convertedDate = year * 100000000;
+  convertedDate = convertedDate + (month * 1000000);
+  convertedDate = convertedDate + (dayOfMonth * 10000);
+  convertedDate = convertedDate + (hour * 100);
+  convertedDate = convertedDate + (minute);
+  Serial.print("Current time is ");
+  Serial.println(convertedDate);
+
+  Serial.println("About to check a planet...");
+  int PlutoPosition = checker(convertedDate, pluto, 197);
+  Serial.print("PlutoPosition is ");
+  Serial.println(PlutoPosition);
+  delay(8000);
+  
+  /*
+  //DEBUGGING
+  
+  
   Serial.println(servonum);
   for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
     pwm.setPWM(servonum, 0, pulselen);
   }
 
-  delay(250);
+  delay(500);
   for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
     pwm.setPWM(servonum, 0, pulselen);
   }
 
-  delay(250);
+  delay(500);
 
   servonum ++;
   if (servonum > 9) {
@@ -178,8 +291,14 @@ void loop() {
     Serial.print(dt.minute); Serial.print(":");
     Serial.print(dt.second); Serial.println("");
 
-    delay(1000);
-  
-  
+    delay(1000);  
   }
-}
+    */
+
+}   // end of loop
+
+
+
+
+
+
