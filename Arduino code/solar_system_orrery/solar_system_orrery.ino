@@ -43,16 +43,20 @@ unsigned long horizonTimeLong;
 // our servo # counter
 uint8_t servonum = 0;
 
-int sunLength = 198;
-int mercuryLength = 198;
-int venusLength = 198;
-int moonLength = 161;
-int marsLength = 198;
-int jupiterLength = 198;
-int saturnLength = 198;
-int uranusLength = 198;
-int neptuneLength = 198;
-int plutoLength = 198;
+
+// the length arrays are as follows:
+// { data array length, servo number, planet down position, planet up position, current planet position}
+
+int sunParams[] = { 198, 0, 150, 375, 0 };
+int mercuryParams[] = { 198, 0, 150, 375, 0 };
+int venusParams[] = { 198, 0, 150, 375, 0 };
+int moonParams[] = { 161, 0, 150, 375, 0 };
+int marsParams[] = { 198, 0, 150, 375, 0 };
+int jupiterParams[] = { 198, 0, 150, 375, 0 };
+int saturnParams[] = { 198, 0, 150, 375, 0 };
+int uranusParams[] = { 198, 0, 150, 375, 0 };
+int neptuneParams[] = { 198, 0, 150, 375, 0 };
+int plutoParams[] = { 198, 0, 150, 375, 0 };
 
 const PROGMEM uint32_t sun[] = {
   1604240232, 1604241311, 1604250232, 1604251310, 1604260233, 1604261309, 1604270234, 1604271308, 1604280235, 1604281307, 1604290236, 1604291306, 1604300236, 1604301305, 
@@ -136,7 +140,7 @@ void checkArray(const uint32_t *planet, int planetLength) {
 }
 
 int checker(long DATE, const uint32_t *planet, int planetDataLength) {
-    Serial.println("Inside checker()");
+//    Serial.println("Inside checker()");
     int currentValue = 0;
     int i;
     for (i=0; i < planetDataLength; i++) {
@@ -148,12 +152,13 @@ int checker(long DATE, const uint32_t *planet, int planetDataLength) {
             } else {
               currentValue = 1;
             }
-            Serial.print("lastEvent already happened: ");
+/*            Serial.print("lastEvent already happened: ");
             Serial.print(lastEvent);
             Serial.print(" : ");
             Serial.println(horizonTimeLong);
             Serial.print("currentValue is ");
             Serial.println(currentValue);
+*/
         }
     }
     
@@ -215,8 +220,6 @@ void testMotors() {
   
     delay(500);
   }
-
-  pwm.setPWM(5, 0, PLANETUP);
 }
 
 
@@ -238,9 +241,9 @@ void setup() {
   pwm.begin();
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
   // Initialize DS3231
-  Serial.println("Initialize DS3231");
+  Serial.println("Initialize DS3231 clock");
   clock.begin();
-
+  Serial.println("Testing motors...");
   testMotors();
 //  checkArray(&pluto, plutoLength);
   
@@ -249,11 +252,9 @@ void setup() {
 
 void loop() {
 
-  Serial.println("In the loop...");
-
-//  checkArray(pluto, plutoLength);
-
   long second, minute, hour, dayOfWeek, dayOfMonth, month, year;
+
+  int thisPlanetPosition;
 
   getDateDs1307(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month, &year);
 
@@ -289,12 +290,49 @@ void loop() {
   Serial.print("Current time is ");
   Serial.println(convertedDate);
 
-  Serial.println("About to check a planet...");
-  int PlutoPosition = checker(convertedDate, saturn, 197);
-  Serial.print("Saturn position is ");
-  Serial.println(PlutoPosition);
-  
+  Serial.println("About to check the planets...");
 
+  thisPlanetPosition = checker(convertedDate, sun, sunParams[0]);
+  Serial.print("Sun position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, mercury, mercuryParams[0]);
+  Serial.print("Mercury position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, venus, venusParams[0]);
+  Serial.print("Venus position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, moon, moonParams[0]);
+  Serial.print("Moon position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, mars, marsParams[0]);
+  Serial.print("Mars position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, jupiter, jupiterParams[0]);
+  Serial.print("Jupiter position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, saturn, saturnParams[0]);
+  Serial.print("Saturn position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, uranus, uranusParams[0]);
+  Serial.print("Uranus position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, neptune, neptuneParams[0]);
+  Serial.print("Neptune position is ");
+  Serial.println(thisPlanetPosition);
+  
+  thisPlanetPosition = checker(convertedDate, pluto, plutoParams[0]);
+  Serial.print("Pluto position is ");
+  Serial.println(thisPlanetPosition);
+  
+  delay(5000);
 
   
   //DEBUGGING
