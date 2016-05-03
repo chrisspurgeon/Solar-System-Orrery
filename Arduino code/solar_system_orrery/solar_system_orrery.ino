@@ -48,15 +48,15 @@ uint8_t servonum = 0;
 // { data array length, servo number, planet down position, planet up position, current planet position}
 
 int sunParams[] = { 198, 0, 150, 375, 0 };
-int mercuryParams[] = { 198, 0, 150, 375, 0 };
-int venusParams[] = { 198, 0, 150, 375, 0 };
-int moonParams[] = { 161, 0, 150, 375, 0 };
-int marsParams[] = { 198, 0, 150, 375, 0 };
-int jupiterParams[] = { 198, 0, 150, 375, 0 };
-int saturnParams[] = { 198, 0, 150, 375, 0 };
-int uranusParams[] = { 198, 0, 150, 375, 0 };
-int neptuneParams[] = { 198, 0, 150, 375, 0 };
-int plutoParams[] = { 198, 0, 150, 375, 0 };
+int mercuryParams[] = { 198, 1, 150, 375, 0 };
+int venusParams[] = { 198, 2, 150, 375, 0 };
+int moonParams[] = { 161, 3, 150, 375, 0 };
+int marsParams[] = { 198, 4, 150, 375, 0 };
+int jupiterParams[] = { 198, 5, 150, 375, 0 };
+int saturnParams[] = { 198, 6, 150, 375, 0 };
+int uranusParams[] = { 198, 7, 150, 375, 0 };
+int neptuneParams[] = { 196, 8, 150, 375, 0 };
+int plutoParams[] = { 195, 9, 150, 375, 0 };
 
 const PROGMEM uint32_t sun[] = {
   1604240232, 1604241311, 1604250232, 1604251310, 1604260233, 1604261309, 1604270234, 1604271308, 1604280235, 1604281307, 1604290236, 1604291306, 1604300236, 1604301305, 
@@ -132,7 +132,7 @@ const PROGMEM uint32_t pluto[] = {
 
 void checkArray(const uint32_t *planet, int planetLength) {
   for (int i = 0; i < planetLength; i++) {
-    Serial.print("pluto[");
+    Serial.print("planet[");
     Serial.print(i);
     Serial.print("]: ");
     Serial.println(pgm_read_dword_near(&planet[i]), DEC);
@@ -145,6 +145,13 @@ int checker(long DATE, const uint32_t *planet, int planetDataLength) {
     int i;
     for (i=0; i < planetDataLength; i++) {
         horizonTimeLong = pgm_read_dword_near(&planet[i]);
+
+/*        
+        Serial.print("I think value[");
+        Serial.print(i);
+        Serial.print("] is ");
+        Serial.println(horizonTimeLong);
+*/
         if (horizonTimeLong <= DATE) {
             lastEvent = horizonTimeLong;
             if (i % 2 == 0) {
@@ -212,14 +219,26 @@ void testMotors() {
     for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
       pwm.setPWM(servonum, 0, pulselen);
     }
-  
     delay(500);
     for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
       pwm.setPWM(servonum, 0, pulselen);
     }
-  
     delay(500);
   }
+}
+
+
+int moveMotor(int thisPlanetPosition, int servoNumber, int downPosition, int upPosition, int currentPlanetPosition) {
+  if (thisPlanetPosition != currentPlanetPosition) {
+    Serial.print("Moving motor ");
+    Serial.println(servoNumber);
+    if (thisPlanetPosition == 0) {
+      pwm.setPWM(servoNumber, 0, downPosition);
+    } else {
+      pwm.setPWM(servoNumber, 0, upPosition);      
+    }
+  }
+  return thisPlanetPosition;
 }
 
 
@@ -231,11 +250,8 @@ void testMotors() {
 
 
 
-
-
-
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(57600);
 
   Serial.println("Initialize servos.");
   pwm.begin();
@@ -245,7 +261,6 @@ void setup() {
   clock.begin();
   Serial.println("Testing motors...");
   testMotors();
-//  checkArray(&pluto, plutoLength);
   
 }
 
@@ -258,6 +273,7 @@ void loop() {
 
   getDateDs1307(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month, &year);
 
+  Serial.println("\n\n");
   Serial.print(hour, DEC);
   Serial.print(":");
   if (minute < 10) {
@@ -295,44 +311,54 @@ void loop() {
   thisPlanetPosition = checker(convertedDate, sun, sunParams[0]);
   Serial.print("Sun position is ");
   Serial.println(thisPlanetPosition);
+  sunParams[4] = moveMotor(thisPlanetPosition, sunParams[1], sunParams[2], sunParams[3], sunParams[4]);
   
   thisPlanetPosition = checker(convertedDate, mercury, mercuryParams[0]);
   Serial.print("Mercury position is ");
   Serial.println(thisPlanetPosition);
+  mercuryParams[4] = moveMotor(thisPlanetPosition, mercuryParams[1], mercuryParams[2], mercuryParams[3], mercuryParams[4]);
   
   thisPlanetPosition = checker(convertedDate, venus, venusParams[0]);
   Serial.print("Venus position is ");
   Serial.println(thisPlanetPosition);
+  venusParams[4] = moveMotor(thisPlanetPosition, venusParams[1], venusParams[2], venusParams[3], venusParams[4]);
   
   thisPlanetPosition = checker(convertedDate, moon, moonParams[0]);
   Serial.print("Moon position is ");
   Serial.println(thisPlanetPosition);
-  
+  moonParams[4] = moveMotor(thisPlanetPosition, moonParams[1], moonParams[2], moonParams[3], moonParams[4]);
+
   thisPlanetPosition = checker(convertedDate, mars, marsParams[0]);
   Serial.print("Mars position is ");
   Serial.println(thisPlanetPosition);
-  
+  marsParams[4] = moveMotor(thisPlanetPosition, marsParams[1], marsParams[2], marsParams[3], marsParams[4]);
+
   thisPlanetPosition = checker(convertedDate, jupiter, jupiterParams[0]);
   Serial.print("Jupiter position is ");
   Serial.println(thisPlanetPosition);
+  jupiterParams[4] = moveMotor(thisPlanetPosition, jupiterParams[1], jupiterParams[2], jupiterParams[3], jupiterParams[4]);
   
   thisPlanetPosition = checker(convertedDate, saturn, saturnParams[0]);
   Serial.print("Saturn position is ");
   Serial.println(thisPlanetPosition);
+  saturnParams[4] = moveMotor(thisPlanetPosition, saturnParams[1], saturnParams[2], saturnParams[3], saturnParams[4]);
   
   thisPlanetPosition = checker(convertedDate, uranus, uranusParams[0]);
   Serial.print("Uranus position is ");
   Serial.println(thisPlanetPosition);
-  
+  uranusParams[4] = moveMotor(thisPlanetPosition, uranusParams[1], uranusParams[2], uranusParams[3], uranusParams[4]);
+
   thisPlanetPosition = checker(convertedDate, neptune, neptuneParams[0]);
   Serial.print("Neptune position is ");
   Serial.println(thisPlanetPosition);
-  
+  neptuneParams[4] = moveMotor(thisPlanetPosition, neptuneParams[1], neptuneParams[2], neptuneParams[3], neptuneParams[4]);
+
   thisPlanetPosition = checker(convertedDate, pluto, plutoParams[0]);
   Serial.print("Pluto position is ");
   Serial.println(thisPlanetPosition);
-  
-  delay(5000);
+  plutoParams[4] = moveMotor(thisPlanetPosition, plutoParams[1], plutoParams[2], plutoParams[3], plutoParams[4]);
+
+  delay(7000);
 
   
   //DEBUGGING
